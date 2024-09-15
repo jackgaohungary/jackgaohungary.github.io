@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章列表</title>
+    <style>
+        .tag {
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff5722, #00fffb); /* Gradient from vibrant orange to bright yellow */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: blink 2s step-start 0s infinite; /* Slower blink */
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        /* Optional: Additional styles */
+        .day-blue {
+            color: #2196F3;
+        }
+        .night {
+            color: #000;
+        }
+        .fs-4 {
+            font-size: 1.5em;
+        }
+        .lh-lg {
+            line-height: 1.75;
+        }
+        .lh-base {
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="show_data">正在載入文章列表⋯⋯</div>
+
+    <script type="text/javascript">
+        //=====1==== JSON feed
+        var feedUrl = 'https://juliastephan.blogspot.com/feeds/posts/default?max-results=9999&alt=json-in-script&callback=myFunc';
+      
+        //=====2==== 讀入 JSON 物件並處理資料
+        function myFunc(root) {
+            var html = [''];
+            var entries = root.feed.entry;
+            var date = 0;
+            for (var i = 0; i < entries.length; i++) {
+                if (entries[i].published.$t.substr(0, 7) != date) {
+                    html.push(' <a class="day-blue night fs-4 lh-lg" href="https://juliastephan.blogspot.com/');
+                    html.push(entries[i].published.$t.substr(0, 4));
+                    html.push('/');
+                    html.push(entries[i].published.$t.substr(5, 2));
+                    html.push('/" style="text-decoration:none;" >');
+                    html.push(entries[i].published.$t.substr(0, 4));
+                    html.push(' 年 ');
+                    html.push(entries[i].published.$t.substr(5, 2));
+                    html.push(' 月');
+                    html.push('</a>');
+                    html.push('<br />');
+                    date = entries[i].published.$t.substr(0, 7);
+                }
+                html.push('<li>');
+                html.push(entries[i].published.$t.substr(5, 2));
+                html.push('/');
+                html.push(entries[i].published.$t.substr(8, 2));
+                html.push('： <a class="day-blue night lh-base" href="');
+                html.push(entries[i].link[4].href);   // 擷取文章網址
+                html.push('" style="text-decoration:none;" >');
+                html.push(entries[i].title.$t);   // 擷取文章標題
+
+                // Add tags with animation
+                if (entries[i].category) {
+                    html.push(' <span class="tag">(');
+                    for (var j = 0; j < entries[i].category.length; j++) {
+                        if (j > 0) html.push(', ');
+                        html.push(entries[i].category[j].term);
+                    }
+                    html.push(')</span>');
+                }
+
+                html.push('</a>');
+                html.push('</li>');
+            }
+            document.getElementById("show_data").innerHTML = html.join('');
+        }
+      
+        //=====3==== 產生匯入外部 Javascript 檔案的語法
+        function IncludeJavaScript(jsFile)  {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = jsFile;
+            document.head.appendChild(script);
+        }
+        //=====4==== 進行匯入 DATA API
+        IncludeJavaScript(feedUrl);
+    </script>
+</body>
+</html>
