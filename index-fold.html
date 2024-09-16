@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章列表</title>
+    <style>
+        .tag {
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff5722, #00fffb); /* Gradient effect */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer; /* Add pointer cursor to indicate clickable */
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .day-blue {
+            color: #2196F3;
+        }
+
+        .night {
+            color: #000;
+        }
+
+        .lh-lg {
+            line-height: 1.75;
+        }
+
+        .lh-base {
+            line-height: 1.5;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+            display: none; /* Default to hidden */
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="show_data">正在載入文章列表⋯⋯</div>
+
+    <script type="text/javascript">
+        //=====1==== JSON feed
+        var feedUrl = 'https://juliastephan.blogspot.com/feeds/posts/default?max-results=9999&alt=json-in-script&callback=myFunc';
+      
+        //=====2==== 读取 JSON 对象并处理数据
+        function myFunc(root) {
+            var html = [''];
+            var entries = root.feed.entry;
+            var tagMap = {};
+
+            // 根据标签分组文章
+            for (var i = 0; i < entries.length; i++) {
+                var tags = entries[i].category ? entries[i].category.map(c => c.term) : ['无标签'];
+
+                // 将文章按标签分组
+                for (var j = 0; j < tags.length; j++) {
+                    if (!tagMap[tags[j]]) {
+                        tagMap[tags[j]] = [];
+                    }
+                    tagMap[tags[j]].push(entries[i]);
+                }
+            }
+
+            // 渲染标签和文章
+            for (var tag in tagMap) {
+                var tagId = 'tag_' + tag.replace(/\s+/g, '_'); // 生成唯一ID
+                html.push('<h3 class="tag" onclick="toggleTag(\'' + tagId + '\')">' + tag + ' (' + tagMap[tag].length + ' 篇文章)</h3>'); // 显示标签和文章数量
+
+                html.push('<ul id="' + tagId + '" class="hidden">'); // 默认隐藏的文章列表
+                tagMap[tag].forEach(function(entry) {
+                    html.push('<li>');
+                    html.push(entry.published.$t.substr(5, 2) + '/' + entry.published.$t.substr(8, 2));
+                    html.push('：<a class="day-blue night lh-base" href="' + entry.link[4].href + '" style="text-decoration:none;">');
+                    html.push(entry.title.$t);  // 显示文章标题
+                    html.push('</a>');
+                    html.push('</li>');
+                });
+                html.push('</ul>');
+            }
+
+            document.getElementById("show_data").innerHTML = html.join('');
+        }
+      
+        //=====3==== 动态加载外部 JavaScript
+        function IncludeJavaScript(jsFile) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = jsFile;
+            document.head.appendChild(script);
+        }
+
+        //=====4==== 调用 Blogger API
+        IncludeJavaScript(feedUrl);
+
+        //=====5==== 标签折叠/展开功能
+        function toggleTag(tagId) {
+            var ulElement = document.getElementById(tagId);
+            if (ulElement.classList.contains('hidden')) {
+                ulElement.classList.remove('hidden');
+                ulElement.style.display = 'block';
+            } else {
+                ulElement.classList.add('hidden');
+                ulElement.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
